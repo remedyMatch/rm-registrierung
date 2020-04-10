@@ -1,3 +1,6 @@
+spring:
+  profiles: dev
+
 logging:
   level:
     root: info
@@ -5,11 +8,11 @@ logging:
 io:
   remedymatch:
     keycloak:
-      url: http://localhost:8090/auth
+      url: https://localhost:8090/auth
       realm: master
       username: admin
       password: Pa55w0rd
-      clientId: admin-cli
-      clientSecret: admin
+      adminCli: admin-cli
     engine:
       url: http://localhost:8085
+

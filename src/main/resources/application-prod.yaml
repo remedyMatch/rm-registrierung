@@ -1,3 +1,13 @@
 spring:
   profiles: prod
 
+io:
+  remedymatch:
+    keycloak:
+      url: 
+      realm: 
+      username: 
+      password: 
+      adminCli: 
+    registrierung:
+      engine-url: 

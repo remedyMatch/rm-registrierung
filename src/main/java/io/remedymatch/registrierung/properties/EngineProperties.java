@@ -9,17 +9,17 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
- * Diese Klasse enthält alle Eigenschaften für das Ausstellen und Lesen von JSON Web Tokens.
+ * Engine Properties
  */
 @Getter
 @Setter
 @Validated
-@ConfigurationProperties(prefix = "io.remedymatch.registrierung")
-public class RegistrierungProperties {
+@ConfigurationProperties(prefix = "io.remedymatch.engine")
+public class EngineProperties {
     /**
-     * Enthält das Passwort für die Datasource.
+     * Engine-URL
      */
     @NotNull
     @NotBlank
-    private String engineUrl;
+    private String url;
 }

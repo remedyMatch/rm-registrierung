@@ -24,12 +24,14 @@ public class KeycloakProperties {
 	private String realm;
 
 	@NotBlank
-	private String uername;
+	private String username;
 
 	@NotBlank
 	private String password;
 
 	@NotBlank
-	private String adminCli;
-	
+	private String clientId;
+
+	@NotBlank
+	private String clientSecret;
 }

@@ -18,18 +18,18 @@ import lombok.ToString;
 @EqualsAndHashCode
 @Builder
 public class KeycloakUser {
-	private String id;
+	private KeycloakUserId id;
 	private String username;
 	private LocalDateTime createdAt;
 	private String firstName;
 	private String lastName;
 	private String email;
-	private String zipcode;
-	private String country;
-	private String city;
 	private String phone;
-	private String housenumber;
-	private String companyType;
 	private String street;
+	private String housenumber;
+	private String zipcode;
+	private String city;
+	private String country;
+	private String companyType;
 	private String status;
 }

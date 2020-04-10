@@ -1,17 +1,12 @@
 spring:
   profiles: test
-        
+
+logging:
+  level:
+    root: info
+    
 remedy:
   security:
     disabled:
       true
 
-io:
-  remedymatch:
-    registrierung:
-      engineUrl: http://localhost:8085
-      keycloakUrl: https://remedymatch.io/auth
-      keycloakRealm: master
-      keycloakUser: admin
-      keycloakPassword: admin
-      keycloakAdminCli: admin-cli

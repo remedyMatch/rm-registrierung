@@ -1,20 +1,25 @@
 package io.remedymatch.registrierung.infrastructure;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import com.sun.istack.NotNull;
+
+import io.remedymatch.registrierung.domain.ProzessInstanzId;
 import io.remedymatch.registrierung.properties.KeycloakProperties;
 import lombok.AllArgsConstructor;
 
@@ -28,47 +33,64 @@ public class KeycloakClient {
 
 	public List<KeycloakUser> findVerifizierteUsers() {
 
-		Keycloak keycloak = KeycloakBuilder.builder().serverUrl(properties.getUrl()).realm(properties.getRealm())
-				.username(properties.getUername()).password(properties.getPassword()).clientId(properties.getAdminCli())
-				.resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
-
-		return keycloak.realm(properties.getRealm()).users().list().stream()
-	        	.filter(user -> user.getAttributes() != null)
-	        	.filter(user -> user.getAttributes().get("status") != null)
-	        	.filter(user -> user.getAttributes().get("status").contains("EMAIL_VERIFIKATION"))
-	        	.map(this::convert)
-	        	.collect(Collectors.toList());
+		return keycloakUsers().list().stream() //
+				.filter(user -> user.getAttributes() != null) //
+				.filter(user -> user.getAttributes().get("status") != null) //
+				.filter(user -> user.getAttributes().get("status").contains("VERIFIZIERT")
+						|| user.getAttributes().get("status").contains("verifiziert")) //
+				.map(KeycloakUserConverter::convert) //
+				.collect(Collectors.toList());
 	}
 	
-	private KeycloakUser convert(final UserRepresentation userRepresentation) {
-		Map<String, List<String>> attribute = userRepresentation.getAttributes();
+	public void setUserAufInFreigabe(//
+			final @NotNull @Valid KeycloakUserId userId, //
+			final @NotNull @Valid ProzessInstanzId prozessInstanzId) {
+		UserResource userResource = keycloakUsers().get(userId.getValue());
+		UserRepresentation user = userResource.toRepresentation();
 		
-		return KeycloakUser.builder() //
-				.id(userRepresentation.getId()) //
-				.username(userRepresentation.getUsername()) //
-				.createdAt(convertToLocalDateTime(userRepresentation.getCreatedTimestamp())) //
-				.firstName(userRepresentation.getFirstName()) //
-				.lastName(userRepresentation.getLastName()) //
-				.email(userRepresentation.getEmail()) //
-				.zipcode(getAttributWertAlsText(attribute, "zipcode")) //
-				.country(getAttributWertAlsText(attribute, "country")) //
-				.city(getAttributWertAlsText(attribute, "city")) //
-				.phone(getAttributWertAlsText(attribute, "phone")) //
-				.housenumber(getAttributWertAlsText(attribute, "housenumber")) //
-				.companyType(getAttributWertAlsText(attribute, "compant-type")) //
-				.street(getAttributWertAlsText(attribute, "street")) //
-				.status(getAttributWertAlsText(attribute, "status")) //
+		user.getAttributes().put("status", Arrays.asList("IN_FREIGABE"));
+		user.getAttributes().put("prozessInstanzId", Arrays.asList(prozessInstanzId.getValue()));
+		
+		userResource.update(user);
+	}
+	
+	public void userFreigeben(//
+			final @NotNull @Valid KeycloakUserId userId) {
+		UserResource userResource = keycloakUsers().get(userId.getValue());
+		UserRepresentation user = userResource.toRepresentation();
+		
+		user.setEnabled(true);
+		user.getAttributes().put("status", Arrays.asList("FREIGEGEBEN"));
+		
+		userResource.update(user);
+	}
+	
+	public void userAblehnen(//
+			final @NotNull @Valid KeycloakUserId userId, //
+			final @NotBlank String grund) {
+		UserResource userResource = keycloakUsers().get(userId.getValue());
+		UserRepresentation user = userResource.toRepresentation();
+		
+		user.setEnabled(false);
+		user.getAttributes().put("status", Arrays.asList("ABGELEHNT"));
+		user.getAttributes().put("ablehnungsGrund", Arrays.asList(grund));
+		
+		userResource.update(user);
+	}
+	
+	private UsersResource keycloakUsers() {
+		return getKeycloak().realm(properties.getRealm()).users();
+	}
+	
+	private Keycloak getKeycloak() {
+		return KeycloakBuilder.builder() //
+				.serverUrl(properties.getUrl()) //
+				.realm(properties.getRealm()) //
+				.username(properties.getUsername()) //
+				.password(properties.getPassword()) //
+				.clientId(properties.getClientId()) //
+				.clientSecret(properties.getClientSecret()) //
+				.resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()) //
 				.build();
-	}
-	
-	private final LocalDateTime convertToLocalDateTime(final Long timestamp) {
-		return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), TimeZone.getDefault().toZoneId());
-	}
-	
-	private final String getAttributWertAlsText(final Map<String, List<String>> attribute, final String attributKey) {
-		if (attribute.containsKey(attributKey)) {
-			return attribute.get(attributKey).stream().collect(Collectors.joining(", "));
-		}
-		return null;
 	}
 }

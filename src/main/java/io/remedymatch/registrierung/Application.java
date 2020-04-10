@@ -6,11 +6,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 
-import io.remedymatch.registrierung.properties.RegistrierungProperties;
+import io.remedymatch.registrierung.properties.EngineProperties;
+import io.remedymatch.registrierung.properties.KeycloakProperties;
 
 @SpringBootApplication
 @EnableGlobalMethodSecurity(securedEnabled = true)
-@EnableConfigurationProperties({ RegistrierungProperties.class })
+@EnableConfigurationProperties({ KeycloakProperties.class, EngineProperties.class })
 @EnableScheduling
 public class Application {
 
