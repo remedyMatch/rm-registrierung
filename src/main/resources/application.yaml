@@ -1,0 +1,15 @@
+logging:
+  level:
+    root: info
+
+io:
+  remedymatch:
+  	keycloak:
+      url: https://localhost:1234/auth
+      realm: master
+      user: admin
+      password: admin
+      adminCli: admin-cli
+    registrierung:
+      engine-url: http://localhost:8085
+
