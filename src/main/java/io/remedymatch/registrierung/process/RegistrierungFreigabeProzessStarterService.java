@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestTemplate;
 
 import io.remedymatch.registrierung.domain.ProzessInstanzId;
-import io.remedymatch.registrierung.infrastructure.KeycloakUser;
+import io.remedymatch.registrierung.domain.RegistrierterUser;
 import io.remedymatch.registrierung.properties.EngineProperties;
 import lombok.AllArgsConstructor;
 import lombok.val;
@@ -19,19 +19,19 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 @Service
 @Slf4j
-public class EngineClient {
+public class RegistrierungFreigabeProzessStarterService{
 
 	private static final String REGISTRIERUNG_FREIGABE_PROZESS_KEY = "rm_registrierung_freigabe";
 
 	@Autowired
 	private EngineProperties engineProperties;
 
-	public ProzessInstanzId prozessStarten(final @NotNull KeycloakUser user) {
+	public ProzessInstanzId prozessStarten(final @NotNull RegistrierterUser user) {
 		log.info("Starte Prozess fuer User: " + user.getUsername());
 
 		val request = ProzessStartRequest.builder() //
 				.prozessKey(REGISTRIERUNG_FREIGABE_PROZESS_KEY) //
-				.businessKey(user.getId().getValue()) //
+				.businessKey(user.getKeycloakUserId().getValue()) //
 				.variables(ProzessVariableConverter.convertToVariables(user)) //
 				.build();
 

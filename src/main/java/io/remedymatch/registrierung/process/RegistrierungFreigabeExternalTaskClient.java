@@ -7,27 +7,28 @@ import org.camunda.bpm.client.backoff.ExponentialBackoffStrategy;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.springframework.stereotype.Component;
 
-import io.remedymatch.registrierung.infrastructure.KeycloakClient;
-import io.remedymatch.registrierung.infrastructure.KeycloakUserId;
+import io.remedymatch.registrierung.domain.KeycloakUserId;
+import io.remedymatch.registrierung.domain.RegistrierungFreigabeService;
 import io.remedymatch.registrierung.properties.EngineProperties;
 import lombok.AllArgsConstructor;
-import lombok.val;
 
 @AllArgsConstructor
 @Component
-class BenutzerFreigebenExternalTaskClient {
+class RegistrierungFreigabeExternalTaskClient {
 
 	private static final String TASK_BENUTZER_FREIGEBEN = "rm_registrierung_freigabe_externalTask_benutzerFreigeben";
 	private static final String TASK_BENUTZER_ABLEHNEN = "rm_registrierung_freigabe_externalTask_benutzerAblehnen";
 
 	private final EngineProperties engineProperties;
-	private final KeycloakClient keycloakClient;
+	private RegistrierungFreigabeService freigabeService;
 
 	@PostConstruct
 	public void doSubscribe() {
 
-		ExternalTaskClient client = ExternalTaskClient.create().baseUrl(engineProperties.getUrl() + "/rest")
-				.backoffStrategy(new ExponentialBackoffStrategy(3000, 2, 3000)).build();
+		ExternalTaskClient client = ExternalTaskClient.create() //
+				.baseUrl(engineProperties.getUrl() + "/rest") //
+				.backoffStrategy(new ExponentialBackoffStrategy(3000, 2, 3000)) //
+				.build();
 
 		client.subscribe(TASK_BENUTZER_FREIGEBEN).lockDuration(2000).handler((externalTask, externalTaskService) -> {
 			benutzerFreigeben(externalTask);
@@ -41,16 +42,11 @@ class BenutzerFreigebenExternalTaskClient {
 	}
 
 	private void benutzerFreigeben(final ExternalTask externalTask) {
-		val userId = getUserId(externalTask);
-
-		keycloakClient.userFreigeben(userId);
-		// FIXME noch ins backend uebernehmen ...
+		freigabeService.userFreigeben(getUserId(externalTask));
 	}
 
 	private void benutzerAblehnen(final ExternalTask externalTask) {
-		val userId = getUserId(externalTask);
-
-		keycloakClient.userAblehnen(userId, externalTask.getVariable("grund").toString());
+		freigabeService.userAblehnen(getUserId(externalTask), externalTask.getVariable("grund").toString());
 	}
 
 	private KeycloakUserId getUserId(final ExternalTask externalTask) {

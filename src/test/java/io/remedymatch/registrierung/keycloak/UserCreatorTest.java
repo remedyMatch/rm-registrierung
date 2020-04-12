@@ -1,11 +1,10 @@
-package io.remedymatch.registrierung.infrastructure;
+package io.remedymatch.registrierung.keycloak;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 // Nur fuer lokale Tests
 
 @ActiveProfiles(profiles = "test")
+@Disabled
 @Slf4j
 public class UserCreatorTest {
 	private static final String SERVER_URL = "http://localhost:8090/auth";
@@ -90,14 +90,14 @@ public class UserCreatorTest {
 
 	@Test
 	void testUserAnlegen() {
-		
+
 		val randomInt = random(10000, 99999);
-		
+
 		UserRepresentation user = new UserRepresentation();
 		user.setUsername("testUser_" + randomInt);
 		user.setFirstName("Thorsten");
 		user.setLastName("Testeer");
-		user.setEmail( "testUser_" + randomInt + "@testerhost.local");
+		user.setEmail("testUser_" + randomInt + "@testerhost.local");
 
 		Map<String, List<String>> attribute = new HashMap<>();
 		attribute.put("zipcode", Arrays.asList("Test ZipCode"));
@@ -112,18 +112,18 @@ public class UserCreatorTest {
 		user.setAttributes(attribute);
 
 		keycloak.realm(REALM).users().create(user);
-		
+
 		readAlleVerifiziertePersonen();
-		
+
 		readAllePersonenInFreigabe();
-		
+
 		readAlleFreigegebenePersonen();
 	}
 
 	private int random(final int min, final int max) {
 		return new Random().nextInt((max - min) + 1) + min;
 	}
-	
+
 	/*
 	 * .zipcode(getAttributWertAlsText(attribute, "zipcode")) //
 	 * .country(getAttributWertAlsText(attribute, "country")) //

@@ -1,4 +1,4 @@
-package io.remedymatch.registrierung.infrastructure;
+package io.remedymatch.registrierung.domain;
 
 import lombok.Value;
 
